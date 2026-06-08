@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- 背景 - 纯黑 -->
+  <rect width="512" height="512" rx="100" ry="100" fill="#000000"/>
+
+  <!-- 外圈装饰 - 细白线 -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#FFFFFF" stroke-width="3" opacity="0.15"/>
+  <circle cx="256" cy="256" r="170" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.08"/>
+
+  <!-- 左上角装饰点 -->
+  <circle cx="128" cy="128" r="4" fill="#FFFFFF" opacity="0.3"/>
+  <circle cx="384" cy="384" r="4" fill="#FFFFFF" opacity="0.3"/>
+  <circle cx="128" cy="384" r="3" fill="#FFFFFF" opacity="0.15"/>
+  <circle cx="384" cy="128" r="3" fill="#FFFFFF" opacity="0.15"/>
+
+  <!-- 底部分隔线 -->
+  <line x1="156" y1="380" x2="356" y2="380" stroke="#FFFFFF" stroke-width="2" opacity="0.1"/>
+
+  <!-- w -->
+  <text x="114" y="300" font-family="'Helvetica Neue', 'Arial Black', sans-serif"
+        font-size="160" font-weight="900" fill="#FFFFFF" letter-spacing="-8">
+    w
+  </text>
+
+  <!-- y -->
+  <text x="210" y="300" font-family="'Helvetica Neue', 'Arial Black', sans-serif"
+        font-size="160" font-weight="900" fill="#FFFFFF" letter-spacing="-8">
+    y
+  </text>
+
+  <!-- h -->
+  <text x="306" y="300" font-family="'Helvetica Neue', 'Arial Black', sans-serif"
+        font-size="160" font-weight="900" fill="#FFFFFF" letter-spacing="-8">
+    h
+  </text>
+
+  <!-- 底部标语 - 极小字 -->
+  <text x="256" y="410" font-family="'Helvetica Neue', Arial, sans-serif"
+        font-size="18" fill="#FFFFFF" text-anchor="middle" opacity="0.25" letter-spacing="6">
+    AI ASSISTANT
+  </text>
+
+  <!-- w 上的 accent 横线 -->
+  <line x1="120" y1="135" x2="170" y2="135" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- 右上角 AI 小标注 -->
+  <text x="380" y="140" font-family="'Helvetica Neue', Arial, sans-serif"
+        font-size="28" font-weight="300" fill="#FFFFFF" text-anchor="middle" opacity="0.3" letter-spacing="2">
+    AI
+  </text>
+</svg>

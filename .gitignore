@@ -1,0 +1,31 @@
+# Flutter
+**/flutter/
+**/ios/
+**/macos/
+**/web/
+**/windows/
+**/linux/
+.dart_tool/
+.packages
+build/
+*.iml
+*.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Generated
+*.freezed.dart
+*.g.dart
+*.gr.dart
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
