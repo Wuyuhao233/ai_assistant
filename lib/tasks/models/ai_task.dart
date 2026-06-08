@@ -1,8 +1,3 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'ai_task.freezed.dart';
-part 'ai_task.g.dart';
-
 /// 任务状态
 enum TaskStatus { active, paused, archived }
 
@@ -12,15 +7,21 @@ enum TriggerType { cron, interval, specificTime }
 /// 执行动作类型
 enum ActionType { notification, apiCall, sendMessage }
 
-@freezed
-class TaskTrigger with _$TaskTrigger {
-  const factory TaskTrigger({
-    required TriggerType type,
-    String? cronExpr,      // cron 表达式: "0 9 * * *"
-    Duration? interval,     // 间隔
-    DateTime? specificTime, // 一次性定时
-    @Default(true) bool repeat, // 是否重复
-  }) = _TaskTrigger;
+/// 任务触发条件
+class TaskTrigger {
+  final TriggerType type;
+  final String? cronExpr;
+  final Duration? interval;
+  final DateTime? specificTime;
+  final bool repeat;
+
+  const TaskTrigger({
+    required this.type,
+    this.cronExpr,
+    this.interval,
+    this.specificTime,
+    this.repeat = true,
+  });
 
   /// 人类可读的触发描述
   String get description {
@@ -39,63 +40,187 @@ class TaskTrigger with _$TaskTrigger {
     }
   }
 
-  factory TaskTrigger.fromJson(Map<String, dynamic> json) =>
-      _$TaskTriggerFromJson(json);
+  TaskTrigger copyWith({
+    TriggerType? type,
+    String? cronExpr,
+    Duration? interval,
+    DateTime? specificTime,
+    bool? repeat,
+  }) =>
+      TaskTrigger(
+        type: type ?? this.type,
+        cronExpr: cronExpr ?? this.cronExpr,
+        interval: interval ?? this.interval,
+        specificTime: specificTime ?? this.specificTime,
+        repeat: repeat ?? this.repeat,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'type': type.name,
+        'cronExpr': cronExpr,
+        'interval': interval?.inMinutes,
+        'specificTime': specificTime?.toIso8601String(),
+        'repeat': repeat,
+      };
+
+  factory TaskTrigger.fromJson(Map<String, dynamic> json) => TaskTrigger(
+        type: TriggerType.values.firstWhere(
+            (t) => t.name == json['type'],
+            orElse: () => TriggerType.interval),
+        cronExpr: json['cronExpr'] as String?,
+        interval: json['interval'] != null
+            ? Duration(minutes: json['interval'] as int)
+            : null,
+        specificTime: json['specificTime'] != null
+            ? DateTime.parse(json['specificTime'] as String)
+            : null,
+        repeat: json['repeat'] as bool? ?? true,
+      );
 }
 
-@freezed
-class TaskAction with _$TaskAction {
-  const factory TaskAction({
-    required ActionType type,
+/// 任务执行动作
+class TaskAction {
+  final ActionType type;
+  final String? notificationTitle;
+  final String? notificationBody;
+  final String? apiUrl;
+  final String? apiMethod;
+  final Map<String, dynamic>? apiHeaders;
+  final String? apiBodyTemplate;
+
+  const TaskAction({
+    required this.type,
+    this.notificationTitle,
+    this.notificationBody,
+    this.apiUrl,
+    this.apiMethod,
+    this.apiHeaders,
+    this.apiBodyTemplate,
+  });
+
+  TaskAction copyWith({
+    ActionType? type,
     String? notificationTitle,
     String? notificationBody,
     String? apiUrl,
     String? apiMethod,
     Map<String, dynamic>? apiHeaders,
     String? apiBodyTemplate,
-  }) = _TaskAction;
+  }) =>
+      TaskAction(
+        type: type ?? this.type,
+        notificationTitle: notificationTitle ?? this.notificationTitle,
+        notificationBody: notificationBody ?? this.notificationBody,
+        apiUrl: apiUrl ?? this.apiUrl,
+        apiMethod: apiMethod ?? this.apiMethod,
+        apiHeaders: apiHeaders ?? this.apiHeaders,
+        apiBodyTemplate: apiBodyTemplate ?? this.apiBodyTemplate,
+      );
 
-  factory TaskAction.fromJson(Map<String, dynamic> json) =>
-      _$TaskActionFromJson(json);
+  Map<String, dynamic> toJson() => {
+        'type': type.name,
+        'notificationTitle': notificationTitle,
+        'notificationBody': notificationBody,
+        'apiUrl': apiUrl,
+        'apiMethod': apiMethod,
+        'apiHeaders': apiHeaders,
+        'apiBodyTemplate': apiBodyTemplate,
+      };
+
+  factory TaskAction.fromJson(Map<String, dynamic> json) => TaskAction(
+        type: ActionType.values.firstWhere(
+            (a) => a.name == json['type'],
+            orElse: () => ActionType.notification),
+        notificationTitle: json['notificationTitle'] as String?,
+        notificationBody: json['notificationBody'] as String?,
+        apiUrl: json['apiUrl'] as String?,
+        apiMethod: json['apiMethod'] as String?,
+        apiHeaders:
+            json['apiHeaders'] as Map<String, dynamic>?,
+        apiBodyTemplate: json['apiBodyTemplate'] as String?,
+      );
 }
 
-@freezed
-class TaskExecution with _$TaskExecution {
-  const factory TaskExecution({
-    required String id,
-    required String taskId,
-    required DateTime executedAt,
-    @Default(true) bool success,
-    String? resultSummary,
-    String? errorMessage,
-    @Default(0) int tokensUsed,
-    Duration? duration,
-  }) = _TaskExecution;
+/// 任务执行记录
+class TaskExecution {
+  final String id;
+  final String taskId;
+  final DateTime executedAt;
+  final bool success;
+  final String? resultSummary;
+  final String? errorMessage;
+  final int tokensUsed;
+  final Duration? duration;
 
-  factory TaskExecution.fromJson(Map<String, dynamic> json) =>
-      _$TaskExecutionFromJson(json);
+  const TaskExecution({
+    required this.id,
+    required this.taskId,
+    required this.executedAt,
+    this.success = true,
+    this.resultSummary,
+    this.errorMessage,
+    this.tokensUsed = 0,
+    this.duration,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'taskId': taskId,
+        'executedAt': executedAt.toIso8601String(),
+        'success': success,
+        'resultSummary': resultSummary,
+        'errorMessage': errorMessage,
+        'tokensUsed': tokensUsed,
+        'duration': duration?.inSeconds,
+      };
+
+  factory TaskExecution.fromJson(Map<String, dynamic> json) => TaskExecution(
+        id: json['id'] as String,
+        taskId: json['taskId'] as String,
+        executedAt: DateTime.parse(json['executedAt'] as String),
+        success: json['success'] as bool? ?? true,
+        resultSummary: json['resultSummary'] as String?,
+        errorMessage: json['errorMessage'] as String?,
+        tokensUsed: json['tokensUsed'] as int? ?? 0,
+        duration: json['duration'] != null
+            ? Duration(seconds: json['duration'] as int)
+            : null,
+      );
 }
 
-@freezed
-class AiTask with _$AiTask {
-  const AiTask._();
+/// AI 定时任务
+class AiTask {
+  final String id;
+  final String title;
+  final String prompt;
+  final TaskTrigger trigger;
+  final TaskAction action;
+  final String? aiProvider;
+  final String? aiModel;
+  final String? conversationId;
+  final TaskStatus status;
+  final DateTime? lastRunAt;
+  final DateTime? nextRunAt;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  final List<TaskExecution> history;
 
-  const factory AiTask({
-    required String id,
-    required String title,
-    required String prompt,
-    required TaskTrigger trigger,
-    required TaskAction action,
-    String? aiProvider,
-    String? aiModel,
-    String? conversationId,
-    @Default(TaskStatus.active) TaskStatus status,
-    DateTime? lastRunAt,
-    DateTime? nextRunAt,
-    required DateTime createdAt,
-    DateTime? updatedAt,
-    @Default([]) List<TaskExecution> history,
-  }) = _AiTask;
+  const AiTask({
+    required this.id,
+    required this.title,
+    required this.prompt,
+    required this.trigger,
+    required this.action,
+    this.aiProvider,
+    this.aiModel,
+    this.conversationId,
+    this.status = TaskStatus.active,
+    this.lastRunAt,
+    this.nextRunAt,
+    required this.createdAt,
+    this.updatedAt,
+    this.history = const [],
+  });
 
   bool get isActive => status == TaskStatus.active;
   bool get isPaused => status == TaskStatus.paused;
@@ -112,6 +237,86 @@ class AiTask with _$AiTask {
     return '${diff.inDays}天后';
   }
 
-  factory AiTask.fromJson(Map<String, dynamic> json) =>
-      _$AiTaskFromJson(json);
+  AiTask copyWith({
+    String? id,
+    String? title,
+    String? prompt,
+    TaskTrigger? trigger,
+    TaskAction? action,
+    String? aiProvider,
+    String? aiModel,
+    String? conversationId,
+    TaskStatus? status,
+    DateTime? lastRunAt,
+    DateTime? nextRunAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    List<TaskExecution>? history,
+  }) =>
+      AiTask(
+        id: id ?? this.id,
+        title: title ?? this.title,
+        prompt: prompt ?? this.prompt,
+        trigger: trigger ?? this.trigger,
+        action: action ?? this.action,
+        aiProvider: aiProvider ?? this.aiProvider,
+        aiModel: aiModel ?? this.aiModel,
+        conversationId: conversationId ?? this.conversationId,
+        status: status ?? this.status,
+        lastRunAt: lastRunAt ?? this.lastRunAt,
+        nextRunAt: nextRunAt ?? this.nextRunAt,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        history: history ?? this.history,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'prompt': prompt,
+        'trigger': trigger.toJson(),
+        'action': action.toJson(),
+        'aiProvider': aiProvider,
+        'aiModel': aiModel,
+        'conversationId': conversationId,
+        'status': status.name,
+        'lastRunAt': lastRunAt?.toIso8601String(),
+        'nextRunAt': nextRunAt?.toIso8601String(),
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+        'history': history.map((h) => h.toJson()).toList(),
+      };
+
+  factory AiTask.fromJson(Map<String, dynamic> json) => AiTask(
+        id: json['id'] as String,
+        title: json['title'] as String? ?? '',
+        prompt: json['prompt'] as String? ?? '',
+        trigger: TaskTrigger.fromJson(
+            json['trigger'] as Map<String, dynamic>? ?? {}),
+        action: TaskAction.fromJson(
+            json['action'] as Map<String, dynamic>? ?? {}),
+        aiProvider: json['aiProvider'] as String?,
+        aiModel: json['aiModel'] as String?,
+        conversationId: json['conversationId'] as String?,
+        status: TaskStatus.values.firstWhere(
+            (s) => s.name == json['status'],
+            orElse: () => TaskStatus.active),
+        lastRunAt: json['lastRunAt'] != null
+            ? DateTime.parse(json['lastRunAt'] as String)
+            : null,
+        nextRunAt: json['nextRunAt'] != null
+            ? DateTime.parse(json['nextRunAt'] as String)
+            : null,
+        createdAt: json['createdAt'] != null
+            ? DateTime.parse(json['createdAt'] as String)
+            : DateTime.now(),
+        updatedAt: json['updatedAt'] != null
+            ? DateTime.parse(json['updatedAt'] as String)
+            : null,
+        history: (json['history'] as List?)
+                ?.map(
+                    (h) => TaskExecution.fromJson(h as Map<String, dynamic>))
+                .toList() ??
+            [],
+      );
 }
