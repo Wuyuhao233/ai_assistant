@@ -26,11 +26,8 @@ jobs:
         run: |
           dart run flutter_launcher_icons -f flutter_launcher_icons.yaml || true
 
-      - name: 🔍 代码分析
-        run: flutter analyze 2>&1 | head -50
-
       - name: 🔨 编译 APK（Release）
-        run: flutter build apk --release 2>&1 | tail -30
+        run: flutter build apk --release
 
       - name: 📤 上传 APK
         uses: actions/upload-artifact@v4
