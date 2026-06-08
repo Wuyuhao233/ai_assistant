@@ -3,7 +3,7 @@ name: Build APK
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:  # 也可以手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,9 +22,8 @@ jobs:
       - name: 📦 安装依赖
         run: flutter pub get
 
-      - name: 🎨 生成图标
-        run: |
-          dart run flutter_launcher_icons -f flutter_launcher_icons.yaml || true
+      - name: 🏗️ 生成 Android 项目
+        run: flutter create --platforms android --project-name ai_assistant .
 
       - name: 🔨 编译 APK（Release）
         run: flutter build apk --release
@@ -32,8 +31,6 @@ jobs:
       - name: 📤 上传 APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-apks
-          path: |
-            build/app/outputs/flutter-apk/*.apk
-            build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: warn
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
